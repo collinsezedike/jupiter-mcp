@@ -26,7 +26,7 @@ This MCP abstracts the complexity of on-chain interactions by providing a struct
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/jupiter-mcp.git
+   git clone https://github.com/collinsezedike/jupiter-mcp.git
    cd jupiter-mcp
    ```
 
@@ -50,16 +50,16 @@ This MCP abstracts the complexity of on-chain interactions by providing a struct
     Add the MCP configuration to `C:\Users\{User}\AppData\Roaming\Claude\claude_desktop_config.json`
 
      ```json
-        "jupiter-mcp": {
-            "command": "node",
-            "args": [
-                "<PROJECT_ABSOLUTE_FILEPATH>\\build\\index.js"
-            ],
-            "env": {
-                "PRIVATE_KEY": "<base58-encoded private key>",
-                "TOKENS_JSON_FILEPATH": "<PROJECT_ABSOLUTE_FILEPATH>\\solana_tokens.json"
-            }
-        },
+    "jupiter-mcp": {
+        "command": "node",
+        "args": [
+            "<PROJECT_ABSOLUTE_FILEPATH>\\build\\index.js"
+        ],
+        "env": {
+            "PRIVATE_KEY": "<base58-encoded private key>",
+            "TOKENS_JSON_FILEPATH": "<PROJECT_ABSOLUTE_FILEPATH>\\solana_tokens.json"
+        }
+    }
      ```
 
     [Follow this guide](https://modelcontextprotocol.io/quickstart/server#testing-your-server-with-claude-for-desktop-2)
