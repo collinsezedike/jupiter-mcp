@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { GetPriceParams } from "../schemas";
+import { GetPriceParamsSchema } from "../schemas";
 
 const JUP_API_URL = "https://lite-api.jup.ag/price/v2";
 
@@ -9,7 +9,7 @@ const headers = {
 	Accept: "application/json",
 };
 
-export const getPrice = async ({ ids }: GetPriceParams) => {
+export const getPrice = async ({ ids }: typeof GetPriceParamsSchema) => {
 	try {
 		let config = {
 			method: "GET",
@@ -29,8 +29,11 @@ export const getPrice = async ({ ids }: GetPriceParams) => {
 		};
 
 		const response = await axios.request(config);
-		return response.data;
+		return JSON.stringify(response.data);
 	} catch (error) {
-		console.error(error);
+		return JSON.stringify({
+			message: "Failed to get price data from Jupiter API",
+			error: error instanceof Error ? error.message : error,
+		});
 	}
 };

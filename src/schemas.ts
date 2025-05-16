@@ -1,54 +1,75 @@
-export interface GetOrderParams {
-	inputMint: string;
-	outputMint: string;
-	amount: string;
-	taker?: string;
-}
+import { z } from "zod";
 
-export interface ExecuteOrderParams {
-	signedTransaction: string;
-	requestId: string;
-}
+export const GetOrderParamsSchema = {
+	inputMint: z.string(),
+	outputMint: z.string(),
+	amount: z.string(),
+	slippageBps: z.string().optional().default("50"),
+	taker: z.string().optional(),
+};
 
-export interface GetTokenBalancesParams {
-	address: string;
-}
+export const ExecuteOrderParamsSchema = {
+	transaction: z.string(),
+	requestId: z.string(),
+};
 
-export interface GetTokenInfoParams {
-	mints: string[];
-}
+export const GetTokenBalancesParamsSchema = {
+	address: z.string(),
+};
 
-export interface CreateTriggerOrderParams {
-	inputMint: string;
-	outputMint: string;
-	maker: string;
-	payer: string;
+export const GetTokenMintsWarningsParamsSchema = {
+	mints: z.array(z.string()),
+};
+
+export const CreateTriggerOrderParamsSchema = {
+	inputMint: z.string(),
+	outputMint: z.string(),
+	maker: z.string(),
+	payer: z.string(),
 	params: {
-		makingAmount: string;
-		takingAmount: string;
-		slippageBps?: string;
-		expiredAt?: string;
-		feeBps?: string;
-	};
-}
+		makingAmount: z.string(),
+		takingAmount: z.string(),
+		slippageBps: z.string().optional(),
+		expiredAt: z.string().optional(),
+		feeBps: z.string().optional(),
+	},
+};
 
-export interface CancelTriggerOrderParams {
-	maker: string;
-	order: string;
-}
+export const CancelTriggerOrderParamsSchema = {
+	maker: z.string(),
+	order: z.string(),
+};
 
-export interface CancelTriggerOrdersParams {
-	maker: string;
-	orders: string[];
-}
+export const CancelTriggerOrdersParamsSchema = {
+	maker: z.string(),
+	orders: z.array(z.string()),
+};
 
-export interface GetTriggerOrdersParams {
-	user: string;
-	orderStatus: "active" | "history";
-	page?: number;
-	includeFailedTx?: boolean;
-}
+export const GetTriggerOrdersParamsSchema = {
+	user: z.string(),
+	orderStatus: z.enum(["active", "history"]),
+	page: z.number().optional(),
+	includeFailedTx: z.boolean().optional(),
+};
 
-export interface GetPriceParams {
-	ids: string[];
-}
+export const GetPriceParamsSchema = {
+	ids: z.array(z.string()),
+};
+
+export const GetTokenMintFromTokenNameParamsSchema = {
+	tokenName: z.string(),
+};
+
+export const GetTokenMetadataFromTokenMintParamsSchema = {
+	mint_address: z.string(),
+};
+
+export const addTokenMetadataToTokensJSONParamsSchema = {
+	address: z.string(),
+	decimals: z.number(),
+	extensions: z.record(z.any()),
+	name: z.string(),
+	symbol: z.string(),
+	tags: z.array(z.string()).optional(),
+	logoURI: z.string().optional(),
+};

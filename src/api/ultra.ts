@@ -1,11 +1,19 @@
 import axios from "axios";
+import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { getMint } from "@solana/spl-token";
 
 import {
-	GetOrderParams,
-	ExecuteOrderParams,
-	GetTokenInfoParams,
-	GetTokenBalancesParams,
+	GetOrderParamsSchema,
+	ExecuteOrderParamsSchema,
+	GetTokenMintsWarningsParamsSchema,
+	GetTokenBalancesParamsSchema,
 } from "../schemas";
+import {
+	hasSufficientGas,
+	hasSufficientTokenAmount,
+	RPC_URL,
+	walletKeypair,
+} from "../utils";
 
 const JUP_API_URL = "https://lite-api.jup.ag/ultra/v1";
 
@@ -18,62 +26,110 @@ export const getOrder = async ({
 	inputMint,
 	outputMint,
 	amount,
-}: GetOrderParams) => {
+	slippageBps,
+	taker,
+}: typeof GetOrderParamsSchema) => {
 	try {
+		const connection = new Connection(RPC_URL, "confirmed");
+		const inputMintPublicKey = new PublicKey(inputMint.toString());
+		const inputMintInfo = await getMint(connection, inputMintPublicKey);
+		const decimals = inputMintInfo.decimals;
+
+		const amountFloat = parseFloat(amount.toString());
+		if (isNaN(amountFloat)) {
+			throw new Error("Invalid amount format");
+		}
+		const amountInt = Math.floor(amountFloat * Math.pow(10, decimals));
+
+		if (!(await hasSufficientTokenAmount(inputMint, amountInt))) {
+			throw new Error("Insufficient tokens avaiable to fill transaction");
+		}
+
 		const config = {
 			method: "GET",
 			url: `${JUP_API_URL}/order`,
 			params: {
-				inputMint,
-				outputMint,
-				amount,
+				inputMint: inputMint.toString(),
+				outputMint: outputMint.toString(),
+				amount: amountInt.toString(),
+				slippageBps: slippageBps.toString(),
+				taker: taker?.toString() || walletKeypair.publicKey.toString(),
 			},
 			headers,
 		};
 
 		const response = await axios.request(config);
-		return response.data;
+		if (!response.data.transaction) {
+			throw new Error(
+				"No transaction field in response. Ensure taker address is valid."
+			);
+		}
+		return JSON.stringify(response.data);
 	} catch (error) {
-		console.error(error);
+		return JSON.stringify({
+			message: "Failed to get order from Jupiter API",
+			error: error instanceof Error ? error.message : error,
+		});
 	}
 };
 
 export const executeOrder = async ({
-	signedTransaction,
+	transaction,
 	requestId,
-}: ExecuteOrderParams) => {
+}: typeof ExecuteOrderParamsSchema) => {
 	try {
-		let config = {
+		const txn = VersionedTransaction.deserialize(
+			Buffer.from(transaction.toString(), "base64")
+		);
+		txn.sign([walletKeypair]);
+
+		if (!(await hasSufficientGas(walletKeypair.publicKey, txn))) {
+			throw new Error("Insufficient SOL avaiable to cover gas fees");
+		}
+
+		const signedTransaction = Buffer.from(txn.serialize()).toString(
+			"base64"
+		);
+
+		const config = {
 			method: "POST",
 			url: `${JUP_API_URL}/execute`,
 			data: { signedTransaction, requestId },
 			headers,
 		};
-
 		const response = await axios.request(config);
-		return response.data;
+		return JSON.stringify(response.data);
 	} catch (error) {
-		console.error(error);
+		return JSON.stringify({
+			message: "Failed to execute order on Jupiter API",
+			error: error instanceof Error ? error.message : error,
+		});
 	}
 };
 
-export const getTokenBalances = async ({ address }: GetTokenBalancesParams) => {
+export const getTokenBalances = async ({
+	address,
+}: typeof GetTokenBalancesParamsSchema) => {
 	try {
 		let config = {
 			method: "GET",
-			url: `${JUP_API_URL}/balances`,
-			params: { address },
+			url: `${JUP_API_URL}/balances/${address}`,
 			headers,
 		};
 
 		const response = await axios.request(config);
-		return response.data;
+		return JSON.stringify(response.data);
 	} catch (error) {
-		console.error(error);
+		return JSON.stringify({
+			message: "Failed to fetch token balances from Jupiter API",
+			error: error instanceof Error ? error.message : error,
+		});
 	}
 };
 
-export const getTokenInfo = async ({ mints }: GetTokenInfoParams) => {
+export const getTokenMintsWarnings = async ({
+	mints,
+}: typeof GetTokenMintsWarningsParamsSchema) => {
 	try {
 		let config = {
 			method: "GET",
@@ -93,23 +149,11 @@ export const getTokenInfo = async ({ mints }: GetTokenInfoParams) => {
 		};
 
 		const response = await axios.request(config);
-		return response.data;
+		return JSON.stringify(response.data);
 	} catch (error) {
-		console.error(error);
-	}
-};
-
-export const getRouter = async () => {
-	try {
-		let config = {
-			method: "GET",
-			url: `${JUP_API_URL}/routers`,
-			headers,
-		};
-
-		const response = await axios.request(config);
-		return response.data;
-	} catch (error) {
-		console.error(error);
+		return JSON.stringify({
+			message: "Failed to get token mints warnings from Jupiter API",
+			error: error instanceof Error ? error.message : error,
+		});
 	}
 };
