@@ -9,7 +9,12 @@ import {
 	CancelTriggerOrdersParamsSchema,
 	GetTriggerOrdersParamsSchema,
 } from "../schemas";
-import { RPC_URL, walletKeypair } from "../utils";
+import {
+	RPC_URL,
+	walletKeypair,
+	hasSufficientGas,
+	hasSufficientTokenAmount,
+} from "../utils";
 
 const JUP_API_URL = "https://lite-api.jup.ag/trigger/v1";
 
@@ -44,10 +49,14 @@ export const createTriggerOrder = async ({
 
 		const makingAmountInt = Math.floor(
 			makingAmountFloat * Math.pow(10, decimals)
-		).toString();
+		);
 		const takingAmountInt = Math.floor(
 			takingAmountFloat * Math.pow(10, decimals)
-		).toString();
+		);
+
+		if (!(await hasSufficientTokenAmount(inputMint, makingAmountInt))) {
+			throw new Error("Insufficient tokens avaiable to fill transaction");
+		}
 
 		const config = {
 			method: "POST",
@@ -58,8 +67,8 @@ export const createTriggerOrder = async ({
 				maker: maker?.toString() || walletKeypair.publicKey.toString(),
 				payer: payer?.toString() || walletKeypair.publicKey.toString(),
 				params: {
-					takingAmount: takingAmountInt,
-					makingAmount: makingAmountInt,
+					takingAmount: takingAmountInt.toString(),
+					makingAmount: makingAmountInt.toString(),
 				},
 			},
 			headers,
@@ -84,6 +93,11 @@ export const executeTriggerOrder = async ({
 			Buffer.from(transaction.toString(), "base64")
 		);
 		txn.sign([walletKeypair]);
+
+		if (!(await hasSufficientGas(walletKeypair.publicKey, txn))) {
+			throw new Error("Insufficient SOL avaiable to cover gas fees");
+		}
+
 		const signedTransaction = Buffer.from(txn.serialize()).toString(
 			"base64"
 		);
