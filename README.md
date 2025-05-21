@@ -1,6 +1,6 @@
 # Jupiter MCP – Token Swap MCP via Jupiter API
 
-Jupiter MCP is a TypeScript/Node.js model context protocol that enables AI agents or user-facing applications to perform token swaps seamlessly on the Solana blockchain using the [Jupiter Aggregator API](https://dev.jup.ag/docs/). It provides utilities for managing Solana token metadata, wallet operations, token balance checks, manage token lists, and perform wallet-based operations using environment-based configuration.
+Jupiter MCP is a TypeScript/Node.js MCP server that facilitates instant token swaps and limit orders seamlessly on Solana using [Jupiter API](https://dev.jup.ag/docs/). It provides utilities for managing Solana token metadata, token balance checks, token lists, and wallet-based operations using environment-based configuration.
 
 This MCP abstracts the complexity of on-chain interactions by providing a structured, context-aware layer for initiating and managing token swap operations. It is designed to be easily integrated with LLM agents, bots, or apps that require secure and reliable access to decentralized liquidity.
 
