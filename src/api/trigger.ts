@@ -23,7 +23,8 @@ export const createTriggerOrder = async ({
 	outputMint,
 	maker,
 	payer,
-	params,
+	makingAmount,
+	takingAmount,
 }: typeof CreateTriggerOrderParamsSchema) => {
 	try {
 		const connection = new Connection(RPC_URL, "confirmed");
@@ -31,8 +32,8 @@ export const createTriggerOrder = async ({
 		const inputMintInfo = await getMint(connection, inputMintPublicKey);
 		const decimals = inputMintInfo.decimals;
 
-		const makingAmountFloat = parseFloat(params.makingAmount.toString());
-		const takingAmountFloat = parseFloat(params.takingAmount.toString());
+		const makingAmountFloat = parseFloat(makingAmount.toString());
+		const takingAmountFloat = parseFloat(takingAmount.toString());
 		if (isNaN(makingAmountFloat) || isNaN(takingAmountFloat)) {
 			throw new Error("Invalid amount format");
 		}
@@ -54,10 +55,9 @@ export const createTriggerOrder = async ({
 			data: {
 				inputMint,
 				outputMint,
-				maker,
-				payer,
+				maker: maker?.toString() || walletKeypair.publicKey.toString(),
+				payer: payer?.toString() || walletKeypair.publicKey.toString(),
 				params: {
-					...params,
 					takingAmount: takingAmountInt,
 					makingAmount: makingAmountInt,
 				},
@@ -112,7 +112,10 @@ export const cancelTriggerOrder = async ({
 		const config = {
 			method: "POST",
 			url: `${JUP_API_URL}/cancelOrder`,
-			data: { maker, order },
+			data: {
+				maker: maker?.toString() || walletKeypair.publicKey.toString(),
+				order,
+			},
 			headers,
 		};
 
@@ -134,7 +137,10 @@ export const cancelTriggerOrders = async ({
 		const config = {
 			method: "POST",
 			url: `${JUP_API_URL}/cancelOrders`,
-			data: { maker, orders },
+			data: {
+				maker: maker?.toString() || walletKeypair.publicKey.toString(),
+				orders,
+			},
 			headers,
 		};
 
@@ -158,7 +164,12 @@ export const getTriggerOrders = async ({
 		const config = {
 			method: "GET",
 			url: `${JUP_API_URL}/getTriggerOrders`,
-			params: { user, orderStatus, page, includeFailedTx },
+			params: {
+				user: user?.toString() || walletKeypair.publicKey.toString(),
+				orderStatus,
+				page,
+				includeFailedTx,
+			},
 			headers,
 		};
 

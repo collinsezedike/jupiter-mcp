@@ -22,40 +22,39 @@ interface Token {
 const getTokenMintFromTokenName = async ({
 	tokenName,
 }: typeof GetTokenMintFromTokenNameParamsSchema): Promise<string> => {
-	try {
-		return new Promise((resolve, reject) => {
-			const readStream = fs.createReadStream(TOKENS_JSON_FILEPATH, {
-				encoding: "utf8",
-			});
-			const stream = readStream.pipe(JSONStream.parse("*"));
-
-			let foundAddress: string | null = null;
-
-			stream.on("data", (data: Token) => {
-				if (data.symbol === tokenName.toString()) {
-					foundAddress = data.address;
-					readStream.destroy();
-				}
-			});
-
-			stream.on("end", () => {
-				if (foundAddress === null) {
-					reject(new Error(`${tokenName} mint address not found.`));
-				} else {
-					resolve(foundAddress);
-				}
-			});
-
-			stream.on("error", (err: Error) => {
-				reject(err);
-			});
+	return new Promise((resolve, reject) => {
+		const readStream = fs.createReadStream(TOKENS_JSON_FILEPATH, {
+			encoding: "utf8",
 		});
-	} catch (error) {
-		return JSON.stringify({
-			message: "Failed to get token mint address from token name",
-			error: error instanceof Error ? error.message : error,
+		const stream = readStream.pipe(JSONStream.parse("*"));
+
+		let resolved = false;
+
+		stream.on("data", (data: Token) => {
+			if (data.symbol === tokenName.toString()) {
+				resolved = true;
+				readStream.destroy();
+				resolve(data.address);
+			}
 		});
-	}
+
+		stream.on("end", () => {
+			if (!resolved) {
+				reject(new Error(`${tokenName} mint address not found.`));
+			}
+		});
+
+		stream.on("error", (err: Error) => {
+			if (!resolved) reject(err);
+		});
+
+		// In case the stream is destroyed before 'end'
+		readStream.on("close", () => {
+			if (!resolved) {
+				reject(new Error(`${tokenName} mint address not found.`));
+			}
+		});
+	});
 };
 
 const addTokenMetadataToTokensJSON = async ({

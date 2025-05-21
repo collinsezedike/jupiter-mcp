@@ -24,15 +24,10 @@ export const GetTokenMintsWarningsParamsSchema = {
 export const CreateTriggerOrderParamsSchema = {
 	inputMint: z.string(),
 	outputMint: z.string(),
-	maker: z.string(),
-	payer: z.string(),
-	params: {
-		makingAmount: z.string(),
-		takingAmount: z.string(),
-		slippageBps: z.string().optional(),
-		expiredAt: z.string().optional(),
-		feeBps: z.string().optional(),
-	},
+	maker: z.string().optional(),
+	payer: z.string().optional(),
+	makingAmount: z.string(),
+	takingAmount: z.string(),
 };
 
 export const CancelTriggerOrderParamsSchema = {
