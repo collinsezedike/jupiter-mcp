@@ -1,14 +1,12 @@
 import bs58 from "bs58";
 import dotenv from "dotenv";
-import { ZodString } from "zod";
 import {
 	Connection,
 	Keypair,
 	PublicKey,
 	VersionedTransaction,
 } from "@solana/web3.js";
-
-import { getTokenBalances } from "./api/ultra";
+import { getAssociatedTokenAddress, getAccount } from "@solana/spl-token";
 
 dotenv.config();
 
@@ -42,16 +40,32 @@ async function initializeWallet() {
 // Initialize the wallet immediately
 initializeWallet();
 
+async function getTokenBalance(
+	walletAddress: string,
+	mintAddress: string
+): Promise<number> {
+	try {
+		const walletPubKey = new PublicKey(walletAddress);
+		const mintPubKey = new PublicKey(mintAddress);
+		const ata = await getAssociatedTokenAddress(mintPubKey, walletPubKey);
+
+		const connection = new Connection(RPC_URL, "confirmed");
+		const tokenAccount = await getAccount(connection, ata);
+
+		return Number(tokenAccount.amount);
+	} catch (error) {
+		console.error("Error fetching token balance:", error);
+		return 0;
+	}
+}
+
 export const hasSufficientTokenAmount = async (
-	address: ZodString,
+	mintAddress: string,
 	amount: number
 ) => {
-	const response = await getTokenBalances({ address });
-	const tokenData = Object.values(JSON.parse(response))[0] as TokenData;
-	if (!tokenData) {
-		throw new Error("No token data found for the given address.");
-	}
-	return amount >= tokenData.uiAmount;
+	const walletAddress = walletKeypair.publicKey.toString();
+	const balance = await getTokenBalance(walletAddress, mintAddress);
+	return balance >= amount;
 };
 
 export const hasSufficientGas = async (

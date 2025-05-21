@@ -40,7 +40,9 @@ export const getOrder = async ({
 		}
 		const amountInt = Math.floor(amountFloat * Math.pow(10, decimals));
 
-		if (!(await hasSufficientTokenAmount(inputMint, amountInt))) {
+		if (
+			!(await hasSufficientTokenAmount(inputMint.toString(), amountInt))
+		) {
 			throw new Error("Insufficient tokens avaiable to fill transaction");
 		}
 
