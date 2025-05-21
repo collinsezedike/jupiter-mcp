@@ -1,14 +1,7 @@
-import {
-	getOrder,
-	executeOrder,
-	getTokenBalances,
-	getTokenMintsWarnings,
-} from "../api/ultra";
-
+import { getOrder, executeOrder, getTokenMintsWarnings } from "../api/ultra";
 import {
 	GetOrderParamsSchema,
 	ExecuteOrderParamsSchema,
-	GetTokenBalancesParamsSchema,
 	GetTokenMintsWarningsParamsSchema,
 } from "../schemas";
 
@@ -24,12 +17,6 @@ export const ultraTools = [
 		description: "Execute a signed swap transaction",
 		parameters: ExecuteOrderParamsSchema,
 		callback: executeOrder,
-	},
-	{
-		name: "getTokenBalances",
-		description: "Get token balances for an address",
-		parameters: GetTokenBalancesParamsSchema,
-		callback: getTokenBalances,
 	},
 	{
 		name: "getTokenMintsWarnings",

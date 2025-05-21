@@ -6,7 +6,6 @@ import {
 	GetOrderParamsSchema,
 	ExecuteOrderParamsSchema,
 	GetTokenMintsWarningsParamsSchema,
-	GetTokenBalancesParamsSchema,
 } from "../schemas";
 import {
 	hasSufficientGas,
@@ -102,26 +101,6 @@ export const executeOrder = async ({
 	} catch (error) {
 		return JSON.stringify({
 			message: "Failed to execute order on Jupiter API",
-			error: error instanceof Error ? error.message : error,
-		});
-	}
-};
-
-export const getTokenBalances = async ({
-	address,
-}: typeof GetTokenBalancesParamsSchema) => {
-	try {
-		let config = {
-			method: "GET",
-			url: `${JUP_API_URL}/balances/${address}`,
-			headers,
-		};
-
-		const response = await axios.request(config);
-		return JSON.stringify(response.data);
-	} catch (error) {
-		return JSON.stringify({
-			message: "Failed to fetch token balances from Jupiter API",
 			error: error instanceof Error ? error.message : error,
 		});
 	}
