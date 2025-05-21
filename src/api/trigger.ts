@@ -33,28 +33,36 @@ export const createTriggerOrder = async ({
 }: typeof CreateTriggerOrderParamsSchema) => {
 	try {
 		const connection = new Connection(RPC_URL, "confirmed");
+
 		const inputMintPublicKey = new PublicKey(inputMint.toString());
 		const inputMintInfo = await getMint(connection, inputMintPublicKey);
-		const decimals = inputMintInfo.decimals;
+		const inputDecimals = inputMintInfo.decimals;
+
+		const outputMintPublicKey = new PublicKey(outputMint.toString());
+		const outputMintInfo = await getMint(connection, outputMintPublicKey);
+		const outputDecimals = outputMintInfo.decimals;
 
 		const makingAmountFloat = parseFloat(makingAmount.toString());
 		const takingAmountFloat = parseFloat(takingAmount.toString());
 		if (isNaN(makingAmountFloat) || isNaN(takingAmountFloat)) {
 			throw new Error("Invalid amount format");
-		}
-
-		if (makingAmountFloat <= 0 || takingAmountFloat <= 0) {
+		} else if (makingAmountFloat <= 0.0 || takingAmountFloat <= 0.0) {
 			throw new Error("Making and taking amounts must be greater than 0");
 		}
 
 		const makingAmountInt = Math.floor(
-			makingAmountFloat * Math.pow(10, decimals)
+			makingAmountFloat * Math.pow(10, inputDecimals)
 		);
 		const takingAmountInt = Math.floor(
-			takingAmountFloat * Math.pow(10, decimals)
+			makingAmountFloat * Math.pow(10, outputDecimals)
 		);
 
-		if (!(await hasSufficientTokenAmount(inputMint, makingAmountInt))) {
+		if (
+			!(await hasSufficientTokenAmount(
+				inputMint.toString(),
+				makingAmountInt
+			))
+		) {
 			throw new Error("Insufficient tokens avaiable to fill transaction");
 		}
 
@@ -77,6 +85,7 @@ export const createTriggerOrder = async ({
 		const response = await axios.request(config);
 		return JSON.stringify(response.data);
 	} catch (error) {
+		console.error("Error creating trigger order:", error);
 		return JSON.stringify({
 			message: "Failed to create trigger order on Jupiter API",
 			error: error instanceof Error ? error.message : error,
@@ -111,6 +120,7 @@ export const executeTriggerOrder = async ({
 		const response = await axios.request(config);
 		return JSON.stringify(response.data);
 	} catch (error) {
+		console.error("Error executing trigger order:", error);
 		return JSON.stringify({
 			message: "Failed to execute trigger order on Jupiter API",
 			error: error instanceof Error ? error.message : error,

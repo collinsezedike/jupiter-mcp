@@ -13,10 +13,6 @@ export const ExecuteOrderParamsSchema = {
 	requestId: z.string(),
 };
 
-export const GetTokenBalancesParamsSchema = {
-	address: z.string(),
-};
-
 export const GetTokenMintsWarningsParamsSchema = {
 	mints: z.array(z.string()),
 };
@@ -31,17 +27,17 @@ export const CreateTriggerOrderParamsSchema = {
 };
 
 export const CancelTriggerOrderParamsSchema = {
-	maker: z.string(),
+	maker: z.string().optional(),
 	order: z.string(),
 };
 
 export const CancelTriggerOrdersParamsSchema = {
-	maker: z.string(),
+	maker: z.string().optional(),
 	orders: z.array(z.string()),
 };
 
 export const GetTriggerOrdersParamsSchema = {
-	user: z.string(),
+	user: z.string().optional(),
 	orderStatus: z.enum(["active", "history"]),
 	page: z.number().optional(),
 	includeFailedTx: z.boolean().optional(),

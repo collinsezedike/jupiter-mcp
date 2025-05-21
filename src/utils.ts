@@ -7,6 +7,8 @@ import {
 	VersionedTransaction,
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getAccount } from "@solana/spl-token";
+import { getPrice } from "./api/price";
+import { ZodString } from "zod";
 
 dotenv.config();
 

@@ -17,7 +17,11 @@ import {
 export const triggerTools = [
 	{
 		name: "createTriggerOrder",
-		description: "Create a new trigger order",
+		description:
+			"Creates a limit or trigger order or swap. The order must be worth at least $5. \
+			Fetch the inputMint token price and multiply it by the makingAmount to get the order value. \
+			If the order is worth less than $5, reject the request and response saying that 'Order must be worth at least $5'. \
+			Otherwise, proceed with the order creation.",
 		parameters: CreateTriggerOrderParamsSchema,
 		callback: createTriggerOrder,
 	},
