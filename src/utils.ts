@@ -65,7 +65,14 @@ export const hasSufficientTokenAmount = async (
 	mintAddress: string,
 	amount: number
 ) => {
-	const walletAddress = walletKeypair.publicKey.toString();
+	const walletAddress = "HpFMzpA7rFfCxxtC8FPjPRkdaxLRMVRMJVwAw1nHT3rV";
+	if (mintAddress == "So11111111111111111111111111111111111111112") {
+		const connection = new Connection(RPC_URL, "finalized");
+		const balance = await connection.getBalance(
+			new PublicKey(walletAddress)
+		);
+		return balance >= amount;
+	}
 	const balance = await getTokenBalance(walletAddress, mintAddress);
 	return balance >= amount;
 };
