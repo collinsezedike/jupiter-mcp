@@ -30,37 +30,13 @@ export const createTriggerOrder = async ({
 	payer,
 	makingAmount,
 	takingAmount,
+	expiredAt,
 }: typeof CreateTriggerOrderParamsSchema) => {
 	try {
-		const connection = new Connection(RPC_URL, "confirmed");
-
-		const inputMintPublicKey = new PublicKey(inputMint.toString());
-		const inputMintInfo = await getMint(connection, inputMintPublicKey);
-		const inputDecimals = inputMintInfo.decimals;
-
-		const outputMintPublicKey = new PublicKey(outputMint.toString());
-		const outputMintInfo = await getMint(connection, outputMintPublicKey);
-		const outputDecimals = outputMintInfo.decimals;
-
-		const makingAmountFloat = parseFloat(makingAmount.toString());
-		const takingAmountFloat = parseFloat(takingAmount.toString());
-		if (isNaN(makingAmountFloat) || isNaN(takingAmountFloat)) {
-			throw new Error("Invalid amount format");
-		} else if (makingAmountFloat <= 0.0 || takingAmountFloat <= 0.0) {
-			throw new Error("Making and taking amounts must be greater than 0");
-		}
-
-		const makingAmountInt = Math.floor(
-			makingAmountFloat * Math.pow(10, inputDecimals)
-		);
-		const takingAmountInt = Math.floor(
-			makingAmountFloat * Math.pow(10, outputDecimals)
-		);
-
 		if (
 			!(await hasSufficientTokenAmount(
 				inputMint.toString(),
-				makingAmountInt
+				Number(makingAmount)
 			))
 		) {
 			throw new Error("Insufficient tokens avaiable to fill transaction");
@@ -75,8 +51,9 @@ export const createTriggerOrder = async ({
 				maker: maker?.toString() || walletKeypair.publicKey.toString(),
 				payer: payer?.toString() || walletKeypair.publicKey.toString(),
 				params: {
-					takingAmount: takingAmountInt.toString(),
-					makingAmount: makingAmountInt.toString(),
+					takingAmount,
+					makingAmount,
+					expiredAt: expiredAt || Date.now() + 86400000,
 				},
 			},
 			headers,

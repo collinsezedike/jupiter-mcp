@@ -24,6 +24,7 @@ export const CreateTriggerOrderParamsSchema = {
 	payer: z.string().optional(),
 	makingAmount: z.string(),
 	takingAmount: z.string(),
+	expiredAt: z.string().optional(),
 };
 
 export const CancelTriggerOrderParamsSchema = {
