@@ -53,7 +53,7 @@ export const createTriggerOrder = async ({
 				params: {
 					takingAmount,
 					makingAmount,
-					expiredAt: expiredAt || Date.now() + 86400000,
+					expiredAt: expiredAt || (Date.now() + 86400000) / 1000,
 				},
 			},
 			headers,
