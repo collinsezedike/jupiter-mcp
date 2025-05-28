@@ -84,9 +84,6 @@ export const hasSufficientGas = async (
 	const connection = new Connection(RPC_URL, "finalized");
 	const balance = await connection.getBalance(pubkey);
 	const estimatedFee = await connection.getFeeForMessage(txn.message);
-	if (!estimatedFee.value) {
-		throw new Error(`Invalid estimated fee response ${estimatedFee}`);
-	}
-
-	return balance >= estimatedFee.value;
+	const fees = estimatedFee.value ? estimatedFee.value : 0.00004; // 40000 lamports
+	return balance >= fees;
 };
